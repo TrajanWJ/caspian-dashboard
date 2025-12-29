@@ -1,7 +1,5 @@
-import { promises as fs } from "fs"
-import path from "path"
 
-const DATA_DIR = path.join(process.cwd(), "data")
+import "server-only"
 
 export interface Promoter {
   id: string
@@ -65,28 +63,26 @@ export interface WebhookLog {
   raw_data: any
 }
 
-async function readJSON<T>(filename: string): Promise<T[]> {
-  try {
-    const filePath = path.join(DATA_DIR, filename)
-    const data = await fs.readFile(filePath, "utf-8")
-    return JSON.parse(data)
-  } catch (error) {
-    console.log(`[v0] Error reading ${filename}:`, error)
-    return []
-  }
-}
+const FLASK_API_URL = process.env.FLASK_API_URL || "http://localhost:3001"
 
-async function writeJSON<T>(filename: string, data: T[]): Promise<void> {
-  try {
-    const filePath = path.join(DATA_DIR, filename)
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), "utf-8")
-  } catch (error) {
-    console.log(`[v0] Error writing ${filename}:`, error)
+async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`${FLASK_API_URL}${endpoint}`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...options,
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`API call failed: ${response.status} ${errorText}`)
   }
+
+  return response.json()
 }
 
 export async function getPromoters(): Promise<Promoter[]> {
-  return readJSON<Promoter>("promoters.json")
+  return apiCall<Promoter[]>('/api/promoters')
 }
 
 export async function getPromoterByTrackingLink(trackingLink: string): Promise<Promoter | null> {
@@ -95,34 +91,33 @@ export async function getPromoterByTrackingLink(trackingLink: string): Promise<P
 }
 
 export async function updatePromoter(promoter: Promoter): Promise<void> {
-  const promoters = await getPromoters()
-  const index = promoters.findIndex((p) => p.id === promoter.id)
-  if (index !== -1) {
-    promoters[index] = promoter
-    await writeJSON("promoters.json", promoters)
-  }
+  await apiCall(`/api/promoters/${promoter.id}`, {
+    method: 'PUT',
+    body: JSON.stringify(promoter),
+  })
 }
 
 export async function getEvents(): Promise<Event[]> {
-  return readJSON<Event>("events.json")
+  return apiCall<Event[]>('/api/events')
 }
 
 export async function getEventById(eventId: string): Promise<Event | null> {
-  const events = await getEvents()
-  return events.find((e) => e.id === eventId) || null
-}
-
-export async function updateEvent(event: Event): Promise<void> {
-  const events = await getEvents()
-  const index = events.findIndex((e) => e.id === event.id)
-  if (index !== -1) {
-    events[index] = event
-    await writeJSON("events.json", events)
+  try {
+    return await apiCall<Event>(`/api/events/${eventId}`)
+  } catch (error) {
+    return null
   }
 }
 
+export async function updateEvent(event: Event): Promise<void> {
+  await apiCall(`/api/events/${event.id}`, {
+    method: 'PUT',
+    body: JSON.stringify(event),
+  })
+}
+
 export async function getOrders(): Promise<Order[]> {
-  return readJSON<Order>("orders.json")
+  return apiCall<Order[]>('/api/orders')
 }
 
 export async function getOrdersByPromoter(promoterId: string): Promise<Order[]> {
@@ -136,35 +131,33 @@ export async function getOrdersByEvent(eventId: string): Promise<Order[]> {
 }
 
 export async function addOrder(order: Order): Promise<void> {
-  const orders = await getOrders()
-  orders.push(order)
-  await writeJSON("orders.json", orders)
+  // Assuming the Flask API doesn't have a direct add order endpoint
+  // This would need to be implemented in the Flask backend
+  throw new Error('addOrder not implemented')
 }
 
 export async function getWebhookLogs(): Promise<WebhookLog[]> {
-  return readJSON<WebhookLog>("webhook-logs.json")
+  return apiCall<WebhookLog[]>('/api/webhook/events')
 }
 
 export async function addWebhookLog(log: WebhookLog): Promise<void> {
-  const logs = await getWebhookLogs()
-  logs.unshift(log) // Add to beginning for most recent first
-  // Keep only last 100 logs
-  const trimmed = logs.slice(0, 100)
-  await writeJSON("webhook-logs.json", trimmed)
+  // This function might not be needed if webhooks are added via the webhook endpoint
+  throw new Error('addWebhookLog not implemented')
 }
 
 export async function updateOrder(order: Order): Promise<void> {
-  const orders = await getOrders()
-  const index = orders.findIndex((o) => o.id === order.id)
-  if (index !== -1) {
-    orders[index] = order
-    await writeJSON("orders.json", orders)
-  }
+  await apiCall(`/api/orders/${order.order_number}`, {
+    method: 'PUT',
+    body: JSON.stringify(order),
+  })
 }
 
 export async function getOrderByOrderNumber(orderNumber: string): Promise<Order | null> {
-  const orders = await getOrders()
-  return orders.find((o) => o.order_number === orderNumber) || null
+  try {
+    return await apiCall<Order>(`/api/orders/${orderNumber}`)
+  } catch (error) {
+    return null
+  }
 }
 
 export function calculateTier(ticketsSold: number): { tier: Promoter["tier"]; rate: number } {
@@ -175,12 +168,6 @@ export function calculateTier(ticketsSold: number): { tier: Promoter["tier"]; ra
 }
 
 export async function recalculateRankings(): Promise<void> {
-  const promoters = await getPromoters()
-  const sorted = promoters.sort((a, b) => b.total_tickets_sold - a.total_tickets_sold)
-
-  for (let i = 0; i < sorted.length; i++) {
-    sorted[i].rank = i + 1
-  }
-
-  await writeJSON("promoters.json", sorted)
+  // This would need to be implemented in the Flask backend
+  throw new Error('recalculateRankings not implemented')
 }

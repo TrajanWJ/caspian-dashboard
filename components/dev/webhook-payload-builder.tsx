@@ -1,285 +1,347 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Code, Copy, Play, Save } from "lucide-react"
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Copy, Play, Save, Trash2 } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
-interface PayloadBuilderProps {
-    onTestWebhook: (payload: any) => void
+interface WebhookPayload {
+    id: string
+    name: string
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+    url: string
+    headers: Record<string, string>
+    body: string
+    createdAt: Date
 }
 
-export function WebhookPayloadBuilder({ onTestWebhook }: PayloadBuilderProps) {
-    const [payloadType, setPayloadType] = useState("new_order")
-    const [payload, setPayload] = useState<any>({
-        type: "new_order",
-        account_first_name: "Test",
-        account_last_name: "Customer",
-        account_email: "test@example.com",
-        account_phone: "+1234567890",
-        event_name: "Summer Music Festival 2025",
-        event_start: "2025-06-15T19:00:00Z",
-        event_end: "2025-06-15T23:00:00Z",
-        event_id: "event-001",
-        items: [
-            {
-                item_id: "ticket-001",
-                name: "General Admission",
-                price: 45,
+const samplePayloads: WebhookPayload[] = [
+    {
+        id: '1',
+        name: 'Order Created',
+        method: 'POST',
+        url: 'https://api.example.com/webhooks/order-created',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Webhook-Signature': 'sha256=...'
+        },
+        body: JSON.stringify({
+            event: 'order.created',
+            data: {
+                id: 'ord_123456',
+                amount: 2999,
+                currency: 'usd',
+                customer: {
+                    id: 'cus_123',
+                    email: 'customer@example.com'
+                },
+                items: [
+                    {
+                        id: 'item_1',
+                        name: 'Premium Widget',
+                        quantity: 2,
+                        price: 1499
+                    }
+                ]
+            },
+            timestamp: new Date().toISOString()
+        }, null, 2),
+        createdAt: new Date()
+    },
+    {
+        id: '2',
+        name: 'Payment Succeeded',
+        method: 'POST',
+        url: 'https://api.example.com/webhooks/payment-succeeded',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Webhook-Signature': 'sha256=...'
+        },
+        body: JSON.stringify({
+            event: 'payment.succeeded',
+            data: {
+                id: 'pay_123456',
+                amount: 2999,
+                currency: 'usd',
+                status: 'succeeded',
+                invoice: 'inv_123'
+            },
+            timestamp: new Date().toISOString()
+        }, null, 2),
+        createdAt: new Date()
+    }
+]
+
+export function WebhookPayloadBuilder() {
+    const [payloads, setPayloads] = useState<WebhookPayload[]>(samplePayloads)
+    const [selectedPayload, setSelectedPayload] = useState<WebhookPayload | null>(null)
+    const [isEditing, setIsEditing] = useState(false)
+    const { toast } = useToast()
+
+    const handleSave = () => {
+        if (!selectedPayload) return
+
+        if (isEditing) {
+            setPayloads(prev => prev.map(p => p.id === selectedPayload.id ? selectedPayload : p))
+        } else {
+            const newPayload = {
+                ...selectedPayload,
+                id: Date.now().toString(),
+                createdAt: new Date()
             }
-        ],
-        date_purchased: new Date().toISOString(),
-        promo_code: "",
-        subtotal: 45,
-        total: 47.25,
-        tracking_link: "PROMO001",
-        order_number: `TEST-${Date.now()}`,
-        update_date: new Date().toISOString(),
-        cancelled: false,
-        refunded: false,
-        disputed: false,
-        partialRefund: 0,
-        custom_fields: [],
-        isInPersonOrder: false,
-    })
-
-    const [isJsonValid, setIsJsonValid] = useState(true)
-    const [jsonError, setJsonError] = useState("")
-
-    const predefinedPayloads = {
-        new_order: {
-            type: "new_order",
-            account_first_name: "Test",
-            account_last_name: "Customer",
-            account_email: "test@example.com",
-            account_phone: "+1234567890",
-            event_name: "Summer Music Festival 2025",
-            event_start: "2025-06-15T19:00:00Z",
-            event_end: "2025-06-15T23:00:00Z",
-            event_id: "event-001",
-            items: [
-                {
-                    item_id: "ticket-001",
-                    name: "General Admission",
-                    price: 45,
-                }
-            ],
-            date_purchased: new Date().toISOString(),
-            subtotal: 45,
-            total: 47.25,
-            tracking_link: "PROMO001",
-            order_number: `TEST-${Date.now()}`,
-            update_date: new Date().toISOString(),
-            cancelled: false,
-            refunded: false,
-            disputed: false,
-            partialRefund: 0,
-            isInPersonOrder: false,
-        },
-        order_updated: {
-            type: "order_updated",
-            account_first_name: "Test",
-            account_last_name: "Customer",
-            account_email: "test@example.com",
-            account_phone: "+1234567890",
-            event_name: "Summer Music Festival 2025",
-            event_start: "2025-06-15T19:00:00Z",
-            event_end: "2025-06-15T23:00:00Z",
-            event_id: "event-001",
-            items: [
-                {
-                    item_id: "ticket-001",
-                    name: "General Admission",
-                    price: 45,
-                }
-            ],
-            date_purchased: new Date().toISOString(),
-            subtotal: 45,
-            total: 47.25,
-            tracking_link: "PROMO001",
-            order_number: `TEST-${Date.now()}`,
-            update_date: new Date().toISOString(),
-            cancelled: false,
-            refunded: false,
-            disputed: false,
-            partialRefund: 0,
-            isInPersonOrder: false,
-        },
-        cancelled_order: {
-            type: "order_updated",
-            account_first_name: "Test",
-            account_last_name: "Customer",
-            account_email: "test@example.com",
-            account_phone: "+1234567890",
-            event_name: "Summer Music Festival 2025",
-            event_start: "2025-06-15T19:00:00Z",
-            event_end: "2025-06-15T23:00:00Z",
-            event_id: "event-001",
-            items: [
-                {
-                    item_id: "ticket-001",
-                    name: "General Admission",
-                    price: 45,
-                }
-            ],
-            date_purchased: new Date().toISOString(),
-            subtotal: 45,
-            total: 47.25,
-            tracking_link: "PROMO001",
-            order_number: `TEST-${Date.now()}`,
-            update_date: new Date().toISOString(),
-            cancelled: true,
-            refunded: false,
-            disputed: false,
-            partialRefund: 0,
-            isInPersonOrder: false,
+            setPayloads(prev => [...prev, newPayload])
         }
+
+        setIsEditing(false)
+        toast({
+            title: 'Payload saved',
+            description: 'Your webhook payload has been saved successfully.'
+        })
     }
 
-    const handlePresetChange = (type: string) => {
-        setPayloadType(type)
-        setPayload(predefinedPayloads[type as keyof typeof predefinedPayloads])
-    }
-
-    const handleJsonChange = (value: string) => {
-        try {
-            const parsed = JSON.parse(value)
-            setPayload(parsed)
-            setIsJsonValid(true)
-            setJsonError("")
-        } catch (error) {
-            setIsJsonValid(false)
-            setJsonError(error instanceof Error ? error.message : "Invalid JSON")
+    const handleDelete = (id: string) => {
+        setPayloads(prev => prev.filter(p => p.id !== id))
+        if (selectedPayload?.id === id) {
+            setSelectedPayload(null)
         }
+        toast({
+            title: 'Payload deleted',
+            description: 'The webhook payload has been removed.'
+        })
     }
 
-    const handleTestWebhook = () => {
-        onTestWebhook(payload)
+    const handleCopy = (text: string) => {
+        navigator.clipboard.writeText(text)
+        toast({
+            title: 'Copied to clipboard',
+            description: 'The payload has been copied to your clipboard.'
+        })
     }
 
-    const copyToClipboard = async () => {
-        try {
-            await navigator.clipboard.writeText(JSON.stringify(payload, null, 2))
-        } catch (error) {
-            console.error("Failed to copy to clipboard:", error)
+    const createNewPayload = () => {
+        const newPayload: WebhookPayload = {
+            id: '',
+            name: 'New Payload',
+            method: 'POST',
+            url: '',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}',
+            createdAt: new Date()
         }
+        setSelectedPayload(newPayload)
+        setIsEditing(false)
     }
-
-    const formatJson = () => {
-        try {
-            // Simple JSON formatting
-            const formatted = JSON.stringify(JSON.parse(JSON.stringify(payload)), null, 2)
-            setPayload(JSON.parse(formatted))
-        } catch (error) {
-            console.error("Failed to format JSON:", error)
-        }
-    }
-
-    const jsonString = JSON.stringify(payload, null, 2)
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                {/* Preset Selection */}
-                <Card className="border-white/10 bg-white/5 p-6 backdrop-blur">
-                    <h3 className="mb-4 text-lg font-semibold text-white">Preset Scenarios</h3>
-                    <div className="space-y-3">
-                        <div>
-                            <Label className="text-white/60">Webhook Type</Label>
-                            <Select value={payloadType} onValueChange={handlePresetChange}>
-                                <SelectTrigger className="border-white/20 bg-white/5 text-white">
-                                    <SelectValue placeholder="Select webhook type" />
-                                </SelectTrigger>
-                                <SelectContent className="border-white/10 bg-white/5">
-                                    <SelectItem value="new_order">New Order</SelectItem>
-                                    <SelectItem value="order_updated">Order Updated</SelectItem>
-                                    <SelectItem value="cancelled_order">Cancelled Order</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => handlePresetChange("new_order")}
-                                className={`border-white/20 text-white ${payloadType === "new_order" ? "bg-white/10" : ""}`}
-                            >
-                                New Order
-                            </Button>
-                            <Button
-                                variant="outline"
-                                onClick={() => handlePresetChange("order_updated")}
-                                className={`border-white/20 text-white ${payloadType === "order_updated" ? "bg-white/10" : ""}`}
-                            >
-                                Order Updated
-                            </Button>
-                            <Button
-                                variant="outline"
-                                onClick={() => handlePresetChange("cancelled_order")}
-                                className={`border-white/20 text-white ${payloadType === "cancelled_order" ? "bg-white/10" : ""}`}
-                            >
-                                Cancelled
-                            </Button>
-                        </div>
-                    </div>
-                </Card>
-
-                {/* Quick Actions */}
-                <Card className="border-white/10 bg-white/5 p-6 backdrop-blur">
-                    <h3 className="mb-4 text-lg font-semibold text-white">Actions</h3>
-                    <div className="flex flex-wrap gap-3">
-                        <Button onClick={handleTestWebhook} className="bg-green-500 hover:bg-green-600 text-white">
-                            <Play className="mr-2 h-4 w-4" />
-                            Test Webhook
-                        </Button>
-                        <Button variant="outline" onClick={copyToClipboard} className="border-white/20 text-white">
-                            <Copy className="mr-2 h-4 w-4" />
-                            Copy JSON
-                        </Button>
-                        <Button variant="outline" onClick={formatJson} className="border-white/20 text-white">
-                            <Code className="mr-2 h-4 w-4" />
-                            Format JSON
-                        </Button>
-                    </div>
-
-                    <div className="mt-4 flex items-center gap-2">
-                        <Badge variant={isJsonValid ? "default" : "destructive"}>
-                            {isJsonValid ? "Valid JSON" : "Invalid JSON"}
-                        </Badge>
-                        {!isJsonValid && (
-                            <span className="text-sm text-red-400">{jsonError}</span>
-                        )}
-                    </div>
-                </Card>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-bold">Webhook Payload Builder</h2>
+                    <p className="text-muted-foreground">
+                        Create and manage webhook payloads for testing
+                    </p>
+                </div>
+                <Button onClick={createNewPayload}>
+                    <Play className="w-4 h-4 mr-2" />
+                    New Payload
+                </Button>
             </div>
 
-            {/* JSON Editor */}
-            <Card className="border-white/10 bg-white/5 p-6 backdrop-blur">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">JSON Payload</h3>
-                    <div className="text-sm text-white/60">
-                        {Object.keys(payload).length} fields
-                    </div>
-                </div>
-                <div className="relative">
-                    <Textarea
-                        value={jsonString}
-                        onChange={(e) => handleJsonChange(e.target.value)}
-                        className="min-h-[400px] font-mono text-sm border-white/20 bg-black text-white"
-                        placeholder="Enter JSON payload..."
-                    />
-                    {!isJsonValid && (
-                        <div className="absolute bottom-2 right-2 bg-red-500/20 border border-red-500/50 text-red-400 px-2 py-1 rounded text-sm">
-                            JSON Error: {jsonError}
-                        </div>
-                    )}
-                </div>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Payload List */}
+                <Card className="lg:col-span-1">
+                    <CardHeader>
+                        <CardTitle>Saved Payloads</CardTitle>
+                        <CardDescription>
+                            Select a payload to edit or test
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        {payloads.map((payload) => (
+                            <div
+                                key={payload.id}
+                                className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedPayload?.id === payload.id
+                                        ? 'border-primary bg-primary/5'
+                                        : 'border-border hover:border-primary/50'
+                                    }`}
+                                onClick={() => setSelectedPayload(payload)}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h4 className="font-medium">{payload.name}</h4>
+                                        <p className="text-sm text-muted-foreground">{payload.method} {payload.url}</p>
+                                    </div>
+                                    <Badge variant="outline">{payload.method}</Badge>
+                                </div>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+
+                {/* Payload Editor */}
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle>
+                            {selectedPayload ? (isEditing ? 'Edit Payload' : selectedPayload.name) : 'Select a Payload'}
+                        </CardTitle>
+                        {selectedPayload && (
+                            <CardDescription>
+                                Created {selectedPayload.createdAt.toLocaleDateString()}
+                            </CardDescription>
+                        )}
+                    </CardHeader>
+                    <CardContent>
+                        {selectedPayload ? (
+                            <Tabs defaultValue="config" className="space-y-4">
+                                <TabsList>
+                                    <TabsTrigger value="config">Configuration</TabsTrigger>
+                                    <TabsTrigger value="body">Body</TabsTrigger>
+                                    <TabsTrigger value="headers">Headers</TabsTrigger>
+                                </TabsList>
+
+                                <TabsContent value="config" className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="name">Name</Label>
+                                            <Input
+                                                id="name"
+                                                value={selectedPayload.name}
+                                                onChange={(e) => setSelectedPayload({ ...selectedPayload, name: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="method">Method</Label>
+                                            <Select
+                                                value={selectedPayload.method}
+                                                onValueChange={(value: WebhookPayload['method']) =>
+                                                    setSelectedPayload({ ...selectedPayload, method: value })
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="GET">GET</SelectItem>
+                                                    <SelectItem value="POST">POST</SelectItem>
+                                                    <SelectItem value="PUT">PUT</SelectItem>
+                                                    <SelectItem value="DELETE">DELETE</SelectItem>
+                                                    <SelectItem value="PATCH">PATCH</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="url">URL</Label>
+                                        <Input
+                                            id="url"
+                                            value={selectedPayload.url}
+                                            onChange={(e) => setSelectedPayload({ ...selectedPayload, url: e.target.value })}
+                                            placeholder="https://api.example.com/webhook"
+                                        />
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="body" className="space-y-4">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <Label>Request Body</Label>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleCopy(selectedPayload.body)}
+                                            >
+                                                <Copy className="w-4 h-4 mr-2" />
+                                                Copy
+                                            </Button>
+                                        </div>
+                                        <Textarea
+                                            value={selectedPayload.body}
+                                            onChange={(e) => setSelectedPayload({ ...selectedPayload, body: e.target.value })}
+                                            rows={15}
+                                            className="font-mono text-sm"
+                                        />
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="headers" className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>Headers</Label>
+                                        {Object.entries(selectedPayload.headers).map(([key, value]) => (
+                                            <div key={key} className="flex gap-2">
+                                                <Input
+                                                    placeholder="Header name"
+                                                    value={key}
+                                                    onChange={(e) => {
+                                                        const newHeaders = { ...selectedPayload.headers }
+                                                        delete newHeaders[key]
+                                                        newHeaders[e.target.value] = value
+                                                        setSelectedPayload({ ...selectedPayload, headers: newHeaders })
+                                                    }}
+                                                />
+                                                <Input
+                                                    placeholder="Header value"
+                                                    value={value}
+                                                    onChange={(e) => setSelectedPayload({
+                                                        ...selectedPayload,
+                                                        headers: { ...selectedPayload.headers, [key]: e.target.value }
+                                                    })}
+                                                />
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        const newHeaders = { ...selectedPayload.headers }
+                                                        delete newHeaders[key]
+                                                        setSelectedPayload({ ...selectedPayload, headers: newHeaders })
+                                                    }}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setSelectedPayload({
+                                                ...selectedPayload,
+                                                headers: { ...selectedPayload.headers, '': '' }
+                                            })}
+                                        >
+                                            Add Header
+                                        </Button>
+                                    </div>
+                                </TabsContent>
+
+                                <div className="flex gap-2 pt-4">
+                                    <Button onClick={handleSave}>
+                                        <Save className="w-4 h-4 mr-2" />
+                                        {isEditing ? 'Update' : 'Save'}
+                                    </Button>
+                                    {selectedPayload.id && (
+                                        <Button
+                                            variant="destructive"
+                                            onClick={() => handleDelete(selectedPayload.id)}
+                                        >
+                                            <Trash2 className="w-4 h-4 mr-2" />
+                                            Delete
+                                        </Button>
+                                    )}
+                                </div>
+                            </Tabs>
+                        ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                                Select a payload from the list or create a new one to get started
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     )
 }

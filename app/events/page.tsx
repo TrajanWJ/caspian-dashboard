@@ -4,44 +4,40 @@ import { Badge } from "@/components/ui/badge"
 import { ChevronRight } from "lucide-react"
 import { mockEvents } from "@/lib/mock-event-data"
 import { cn } from "@/lib/utils"
-import { Sidebar } from "@/components/sidebar"
 
 export default function EventsPage() {
   const activeEvents = mockEvents.filter((e) => e.status === "active")
   const pastEvents = mockEvents.filter((e) => e.status === "past")
 
   return (
-    <div className="min-h-screen bg-black">
-      <Sidebar variant="owner" />
-      <main className="ml-64 px-6 py-12">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-8">
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Events</h1>
-            <p className="mt-2 text-muted-foreground">Time windows where your network creates impact</p>
-          </div>
+    <main className="px-6 py-12">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Events</h1>
+          <p className="mt-2 text-muted-foreground">Time windows where your network creates impact</p>
+        </div>
 
-          {activeEvents.length > 0 && (
-            <div className="mb-12">
-              <h2 className="mb-4 text-xl font-semibold tracking-tight">Active</h2>
-              <div className="space-y-3">
-                {activeEvents.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <h2 className="mb-4 text-xl font-semibold tracking-tight">Past events</h2>
+        {activeEvents.length > 0 && (
+          <div className="mb-12">
+            <h2 className="mb-4 text-xl font-semibold tracking-tight">Active</h2>
             <div className="space-y-3">
-              {pastEvents.map((event) => (
+              {activeEvents.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
           </div>
+        )}
+
+        <div>
+          <h2 className="mb-4 text-xl font-semibold tracking-tight">Past events</h2>
+          <div className="space-y-3">
+            {pastEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   )
 }
 

@@ -85,7 +85,7 @@ export function Sidebar({ variant = "owner", trackingLink, promoterName, classNa
     return (
         <aside
             className={cn(
-                "fixed left-0 top-0 z-50 h-screen border-r border-white/10 bg-black/60 backdrop-blur-xl transition-all duration-300",
+                "fixed left-0 top-0 z-50 h-screen border-r border-white/10 bg-gradient-to-b from-black/80 via-black/60 to-black/80 backdrop-blur-xl transition-all duration-300 shadow-xl",
                 isCollapsed ? "w-16" : "w-64",
                 className
             )}
@@ -118,39 +118,44 @@ export function Sidebar({ variant = "owner", trackingLink, promoterName, classNa
 
             {/* Navigation Items */}
             <nav className="flex flex-col gap-1 p-4">
-                {navItems.map((item) => {
-                    const isActive = pathname === item.href
-                    const Icon = item.icon
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={cn(
-                                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                                isActive
-                                    ? "bg-white/10 text-white"
-                                    : "text-white/60 hover:bg-white/5 hover:text-white/80"
-                            )}
-                        >
-                            <Icon className={cn("h-5 w-5", isCollapsed && "mx-auto")} />
-                            {!isCollapsed && <span>{item.label}</span>}
-                        </Link>
-                    )
-                })}
+                <div className="space-y-1">
+                    {navItems.map((item) => {
+                        const isActive = pathname === item.href
+                        const Icon = item.icon
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={cn(
+                                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                                    isActive
+                                        ? "bg-white/10 text-white"
+                                        : "text-white/60 hover:bg-white/5 hover:text-white/80"
+                                )}
+                            >
+                                <Icon className={cn("h-5 w-5", isCollapsed && "mx-auto")} />
+                                {!isCollapsed && <span>{item.label}</span>}
+                            </Link>
+                        )
+                    })}
+                </div>
             </nav>
 
             {/* Footer Section */}
-            {!isCollapsed && (
-                <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 p-4">
+            <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-gradient-to-t from-black/40 to-transparent p-4">
+                <div className="space-y-2">
+                    <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                     <Link
                         href="/"
-                        className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/60 transition-colors hover:text-white/80"
+                        className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/60 transition-all hover:bg-white/5 hover:text-white/80 hover:shadow-lg"
                     >
-                        <LogOut className="h-5 w-5" />
-                        <span>Exit</span>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
+                            <LogOut className="h-4 w-4" />
+                        </div>
+                        {!isCollapsed && <span className="font-medium">Exit</span>}
                     </Link>
                 </div>
-            )}
+            </div>
         </aside>
     )
 }

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowRight, Activity, TrendingUp, Users, Zap } from "lucide-react"
+import { ArrowRight, Activity, TrendingUp, Users, Zap, Code } from "lucide-react"
 
 export default function LandingPage() {
   return (
@@ -39,6 +39,16 @@ export default function LandingPage() {
                 className="rounded-xl border-white/20 bg-white/5 px-8 py-6 text-base font-semibold text-white hover:bg-white/10"
               >
                 Promoter Login
+              </Button>
+            </Link>
+            <Link href="/dev">
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-xl border-purple-500/20 bg-purple-500/10 px-8 py-6 text-base font-semibold text-purple-300 hover:bg-purple-500/20 hover:text-purple-200"
+              >
+                <Code className="mr-2 h-4 w-4" />
+                Dev Testing Suite
               </Button>
             </Link>
           </div>

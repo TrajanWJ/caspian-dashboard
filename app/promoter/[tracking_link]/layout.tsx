@@ -1,7 +1,7 @@
 import type React from "react"
-import { PromoterNav } from "@/components/promoter-nav"
 import { getPromoterByTrackingLink } from "@/lib/data-store"
 import { notFound } from "next/navigation"
+import { Sidebar } from "@/components/sidebar"
 
 export default async function PromoterLayout({
   children,
@@ -19,8 +19,14 @@ export default async function PromoterLayout({
 
   return (
     <div className="min-h-screen bg-black">
-      <PromoterNav trackingLink={tracking_link} promoterName={`${promoter.first_name} ${promoter.last_name}`} />
-      {children}
+      <Sidebar
+        variant="promoter"
+        trackingLink={tracking_link}
+        promoterName={`${promoter.first_name} ${promoter.last_name}`}
+      />
+      <div className="ml-64">
+        {children}
+      </div>
     </div>
   )
 }

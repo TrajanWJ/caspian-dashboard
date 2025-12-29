@@ -1,6 +1,5 @@
 import { NetworkTreeNode } from "@/components/network-tree-node"
 import { mockNetworkData } from "@/lib/mock-network-data"
-import { Sidebar } from "@/components/sidebar"
 
 export default function NetworkPage() {
   return (

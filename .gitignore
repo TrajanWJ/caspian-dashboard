@@ -118,3 +118,4 @@ Thumbs.db
 # Data files (for production)
 data/
 .vercel
+.env*.local
