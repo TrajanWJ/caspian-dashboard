@@ -59,7 +59,7 @@ export default function DevDashboardPage() {
 
                 {/* Main Testing Suites */}
                 <Tabs defaultValue="components" className="mt-8 space-y-4">
-                    <TabsList className="bg-card border border-border grid grid-cols-7 gap-2">
+                    <TabsList className="bg-card border border-border grid grid-cols-9 gap-2">
                         <TabsTrigger value="components" className="data-[state=active]:bg-secondary flex items-center gap-2">
                             <Code className="h-4 w-4" />
                             Components
@@ -83,6 +83,14 @@ export default function DevDashboardPage() {
                         <TabsTrigger value="debugging" className="data-[state=active]:bg-secondary flex items-center gap-2">
                             <Bug className="h-4 w-4" />
                             Debugging
+                        </TabsTrigger>
+                        <TabsTrigger value="webhook" className="data-[state=active]:bg-secondary flex items-center gap-2">
+                            <Zap className="h-4 w-4" />
+                            Webhooks
+                        </TabsTrigger>
+                        <TabsTrigger value="database" className="data-[state=active]:bg-secondary flex items-center gap-2">
+                            <Activity className="h-4 w-4" />
+                            Database
                         </TabsTrigger>
                         <TabsTrigger value="monitoring" className="data-[state=active]:bg-secondary flex items-center gap-2">
                             <Monitor className="h-4 w-4" />
@@ -112,6 +120,36 @@ export default function DevDashboardPage() {
 
                     <TabsContent value="debugging">
                         <DebuggingToolsSuite />
+                    </TabsContent>
+
+                    <TabsContent value="webhook">
+                        <div className="space-y-6">
+                            <Card className="border-border bg-card p-6">
+                                <h3 className="mb-4 text-lg font-semibold text-foreground">Real-time Webhook Monitor</h3>
+                                <p className="text-muted-foreground">Live ticket sales logging and webhook endpoint monitoring. View incoming sales data in real-time.</p>
+                            </Card>
+                            <div className="grid gap-6">
+                                {/* This will be replaced by the actual webhook monitoring component */}
+                                <div className="text-center text-muted-foreground py-8">
+                                    Webhook monitoring functionality available at <a href="/dev/webhook" className="text-blue-400 underline">/dev/webhook</a>
+                                </div>
+                            </div>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="database">
+                        <div className="space-y-6">
+                            <Card className="border-border bg-card p-6">
+                                <h3 className="mb-4 text-lg font-semibold text-foreground">Database Management Center</h3>
+                                <p className="text-muted-foreground">Centralized source of truth for webhook data processing and analytics. Manage events, orders, and promoters.</p>
+                            </Card>
+                            <div className="grid gap-6">
+                                {/* This will be replaced by the actual database management component */}
+                                <div className="text-center text-muted-foreground py-8">
+                                    Database management functionality available at <a href="/dev/database" className="text-blue-400 underline">/dev/database</a>
+                                </div>
+                            </div>
+                        </div>
                     </TabsContent>
 
                     <TabsContent value="monitoring">

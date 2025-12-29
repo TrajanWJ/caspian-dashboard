@@ -1,24 +1,20 @@
+"use client"
+
 import { notFound } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
     Database,
     RefreshCw,
-    Search,
     Calendar,
-    TrendingUp,
     Users,
     Ticket,
     DollarSign,
     Activity,
-    Download,
-    Upload,
-    Settings
+    TrendingUp,
+    Search
 } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -27,31 +23,24 @@ interface DatabaseEvent {
     name: string
     event_id: string
     status: "active" | "upcoming" | "completed"
-    total_sales: number
     total_revenue: number
-    created_at: string
-    first_sale_at: string | null
-    last_sale_at: string | null
-    promoter_count: number
     ticket_count: number
+    promoter_count: number
+    created_at: string
+    last_sale_at: string | null
 }
 
 interface DatabaseOrder {
     id: string
     order_number: string
-    event_id: string
     event_name: string
-    promoter_id: string | null
-    promoter_tracking_link: string | null
     account_name: string
     account_email: string
     total: number
     items_count: number
-    commission_earned: number
-    status: "completed" | "cancelled" | "refunded"
-    created_at: string
+    promoter_tracking_link: string | null
     processed_at: string
-    webhook_timestamp: string
+    status: "completed" | "cancelled" | "refunded"
 }
 
 interface DatabasePromoter {
@@ -74,8 +63,6 @@ interface DatabaseMetrics {
     totalRevenue: number
     totalTicketsSold: number
     totalPromoters: number
-    avgOrderValue: number
-    conversionRate: number
     lastUpdated: string
 }
 
@@ -95,13 +82,10 @@ export default function DevDatabasePage() {
         totalRevenue: 0,
         totalTicketsSold: 0,
         totalPromoters: 0,
-        avgOrderValue: 0,
-        conversionRate: 0,
         lastUpdated: new Date().toISOString()
     })
     const [isLoading, setIsLoading] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
-    const [statusFilter, setStatusFilter] = useState("all")
 
     const fetchDatabaseData = async () => {
         try {
@@ -132,8 +116,7 @@ export default function DevDatabasePage() {
             const totalOrders = orders.length
             const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0)
             const totalTicketsSold = orders.reduce((sum, order) => sum + (order.items_count || 0), 0)
-            const totalPromoters = new Set(orders.map(order => order.promoter_id).filter(Boolean)).size
-            const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
+            const totalPromoters = new Set(orders.map(order => order.promoter_tracking_link).filter(Boolean)).size
 
             setMetrics({
                 totalEvents: events.length,
@@ -141,8 +124,6 @@ export default function DevDatabasePage() {
                 totalRevenue,
                 totalTicketsSold,
                 totalPromoters,
-                avgOrderValue,
-                conversionRate: 0, // Would need traffic data to calculate
                 lastUpdated: new Date().toISOString()
             })
 
@@ -204,12 +185,22 @@ export default function DevDatabasePage() {
         }
     }
 
-    const filteredEvents = events.filter(event => {
-        const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            event.event_id.toLowerCase().includes(searchQuery.toLowerCase())
-        const matchesStatus = statusFilter === "all" || event.status === statusFilter
-        return matchesSearch && matchesStatus
-    })
+    const filteredEvents = events.filter(event =>
+        event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.event_id.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+
+    const filteredOrders = orders.filter(order =>
+        order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.account_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.event_name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+
+    const filteredPromoters = promoters.filter(promoter =>
+        promoter.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        promoter.tracking_link.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        promoter.email.toLowerCase().includes(searchQuery.toLowerCase())
+    )
 
     return (
         <div className="min-h-screen bg-black">
@@ -230,16 +221,26 @@ export default function DevDatabasePage() {
                                 <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                                 Refresh Data
                             </Button>
-                            <Button variant="outline" className="border-border text-foreground hover:bg-card">
-                                <Download className="mr-2 h-4 w-4" />
-                                Export
-                            </Button>
                         </div>
                     </div>
                 </div>
 
+                {/* Search */}
+                <div className="mb-6">
+                    <div className="relative max-w-md">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <input
+                            type="text"
+                            placeholder="Search data..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                </div>
+
                 {/* Metrics Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
                     <Card className="border-border bg-card p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -279,55 +280,54 @@ export default function DevDatabasePage() {
                             <Users className="h-8 w-8 text-yellow-500" />
                         </div>
                     </Card>
+
+                    <Card className="border-border bg-card p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Total Tickets</p>
+                                <p className="text-2xl font-bold text-foreground">{metrics.totalTicketsSold}</p>
+                            </div>
+                            <Activity className="h-8 w-8 text-red-500" />
+                        </div>
+                    </Card>
                 </div>
 
-                {/* Data Management Tabs */}
+                {/* Data Tabs */}
                 <Card className="border-border bg-card">
                     <div className="p-6 border-b border-border">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-foreground">Data Repository</h3>
-                            <div className="flex items-center gap-4">
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                                    <Input
-                                        placeholder="Search data..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="pl-10 w-64"
-                                    />
-                                </div>
-                                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                    <SelectTrigger className="w-40">
-                                        <SelectValue placeholder="Filter status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Status</SelectItem>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="upcoming">Upcoming</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setActiveTab("events")}
+                                className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === "events"
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-card text-foreground hover:bg-card/80"
+                                    }`}
+                            >
+                                Events ({filteredEvents.length})
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("orders")}
+                                className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === "orders"
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-card text-foreground hover:bg-card/80"
+                                    }`}
+                            >
+                                Orders ({filteredOrders.length})
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("promoters")}
+                                className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === "promoters"
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-card text-foreground hover:bg-card/80"
+                                    }`}
+                            >
+                                Promoters ({filteredPromoters.length})
+                            </button>
                         </div>
                     </div>
 
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="events" className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4" />
-                                Events ({events.length})
-                            </TabsTrigger>
-                            <TabsTrigger value="orders" className="flex items-center gap-2">
-                                <Ticket className="h-4 w-4" />
-                                Orders ({orders.length})
-                            </TabsTrigger>
-                            <TabsTrigger value="promoters" className="flex items-center gap-2">
-                                <Users className="h-4 w-4" />
-                                Promoters ({promoters.length})
-                            </TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="events" className="p-6">
+                    <div className="p-6">
+                        {activeTab === "events" && (
                             <ScrollArea className="h-[600px]">
                                 <div className="space-y-4">
                                     {filteredEvents.length === 0 ? (
@@ -351,4 +351,137 @@ export default function DevDatabasePage() {
                                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                                                     <div>
                                                         <span className="text-muted-foreground">Revenue:</span>
-                                                        <span className="ml-2 text-foreground font-medium">{formatCurrency(event.total_re
+                                                        <span className="ml-2 text-foreground font-medium">{formatCurrency(event.total_revenue)}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Tickets:</span>
+                                                        <span className="ml-2 text-foreground font-medium">{event.ticket_count}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Promoters:</span>
+                                                        <span className="ml-2 text-foreground font-medium">{event.promoter_count}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Created:</span>
+                                                        <span className="ml-2 text-foreground font-medium">{formatDate(event.created_at)}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Last Sale:</span>
+                                                        <span className="ml-2 text-foreground font-medium">
+                                                            {event.last_sale_at ? formatDate(event.last_sale_at) : 'Never'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </Card>
+                                        ))
+                                    )}
+                                </div>
+                            </ScrollArea>
+                        )}
+
+                        {activeTab === "orders" && (
+                            <ScrollArea className="h-[600px]">
+                                <div className="space-y-4">
+                                    {filteredOrders.length === 0 ? (
+                                        <div className="text-center text-muted-foreground py-8">
+                                            No orders found. Orders are created from webhook data.
+                                        </div>
+                                    ) : (
+                                        filteredOrders.map((order) => (
+                                            <Card key={order.id} className="border-border bg-card/50 p-4">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-3 h-3 rounded-full ${getStatusColor(order.status)}`}></div>
+                                                        <h4 className="font-semibold text-foreground font-mono">{order.order_number}</h4>
+                                                        <Badge variant="outline">{order.event_name}</Badge>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="font-bold text-foreground">{formatCurrency(order.total)}</div>
+                                                        <div className="text-xs text-muted-foreground">{order.items_count} items</div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                                                    <div>
+                                                        <span className="text-muted-foreground">Customer:</span>
+                                                        <span className="ml-2 text-foreground">{order.account_name}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Email:</span>
+                                                        <span className="ml-2 text-foreground">{order.account_email}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Promoter:</span>
+                                                        <span className="ml-2 text-foreground">
+                                                            {order.promoter_tracking_link || 'Direct Sale'}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Processed:</span>
+                                                        <span className="ml-2 text-foreground">{formatDate(order.processed_at)}</span>
+                                                    </div>
+                                                </div>
+                                            </Card>
+                                        ))
+                                    )}
+                                </div>
+                            </ScrollArea>
+                        )}
+
+                        {activeTab === "promoters" && (
+                            <ScrollArea className="h-[600px]">
+                                <div className="space-y-4">
+                                    {filteredPromoters.length === 0 ? (
+                                        <div className="text-center text-muted-foreground py-8">
+                                            No promoters found. Promoters are tracked from referral data.
+                                        </div>
+                                    ) : (
+                                        filteredPromoters.map((promoter) => (
+                                            <Card key={promoter.id} className="border-border bg-card/50 p-4">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-3 h-3 rounded-full ${getTierColor(promoter.tier)}`}></div>
+                                                        <h4 className="font-semibold text-foreground">{promoter.name}</h4>
+                                                        <Badge variant="outline">{promoter.tracking_link}</Badge>
+                                                    </div>
+                                                    <Badge className={getTierColor(promoter.tier)}>
+                                                        {promoter.tier}
+                                                    </Badge>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                                                    <div>
+                                                        <span className="text-muted-foreground">Tickets Sold:</span>
+                                                        <span className="ml-2 text-foreground font-medium">{promoter.total_tickets_sold}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Revenue:</span>
+                                                        <span className="ml-2 text-foreground font-medium">{formatCurrency(promoter.total_revenue_generated)}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Commission:</span>
+                                                        <span className="ml-2 text-foreground font-medium">{formatCurrency(promoter.total_commission_earned)}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Active Events:</span>
+                                                        <span className="ml-2 text-foreground font-medium">{promoter.active_events}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-muted-foreground">Last Sale:</span>
+                                                        <span className="ml-2 text-foreground font-medium">
+                                                            {promoter.last_sale_at ? formatDate(promoter.last_sale_at) : 'Never'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </Card>
+                                        ))
+                                    )}
+                                </div>
+                            </ScrollArea>
+                        )}
+                    </div>
+                </Card>
+            </div>
+        </div>
+    )
+}
