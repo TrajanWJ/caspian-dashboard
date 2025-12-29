@@ -37,7 +37,7 @@ export async function GET() {
   }
 
   // Send to our webhook endpoint
-  const webhookUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/webhook/posh`
+  const webhookUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://caspian-dashboard.vercel.app"}/api/webhook/posh`
 
   try {
     const response = await fetch(webhookUrl, {
