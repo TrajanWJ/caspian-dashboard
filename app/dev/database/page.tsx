@@ -203,285 +203,283 @@ export default function DevDatabasePage() {
     )
 
     return (
-        <div className="min-h-screen bg-black">
-            <div className="mx-auto max-w-7xl px-6 py-8">
-                {/* Header */}
-                <div className="mb-8">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+            {/* Header */}
+            <div className="mb-8">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="mb-2 text-4xl font-bold text-foreground">Database Management Center</h1>
+                        <p className="text-muted-foreground">Centralized source of truth for webhook data processing and analytics</p>
+                    </div>
+                    <div className="flex gap-4">
+                        <Button
+                            onClick={fetchDatabaseData}
+                            disabled={isLoading}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            Refresh Data
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Search */}
+            <div className="mb-6">
+                <div className="relative max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <input
+                        type="text"
+                        placeholder="Search data..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+            </div>
+
+            {/* Metrics Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                <Card className="border-border bg-card p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="mb-2 text-4xl font-bold text-foreground">Database Management Center</h1>
-                            <p className="text-muted-foreground">Centralized source of truth for webhook data processing and analytics</p>
+                            <p className="text-sm text-muted-foreground">Total Events</p>
+                            <p className="text-2xl font-bold text-foreground">{metrics.totalEvents}</p>
                         </div>
-                        <div className="flex gap-4">
-                            <Button
-                                onClick={fetchDatabaseData}
-                                disabled={isLoading}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                            >
-                                <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                                Refresh Data
-                            </Button>
-                        </div>
+                        <Calendar className="h-8 w-8 text-blue-500" />
                     </div>
-                </div>
+                </Card>
 
-                {/* Search */}
-                <div className="mb-6">
-                    <div className="relative max-w-md">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                        <input
-                            type="text"
-                            placeholder="Search data..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                <Card className="border-border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Total Revenue</p>
+                            <p className="text-2xl font-bold text-foreground">{formatCurrency(metrics.totalRevenue)}</p>
+                        </div>
+                        <DollarSign className="h-8 w-8 text-green-500" />
                     </div>
-                </div>
+                </Card>
 
-                {/* Metrics Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-                    <Card className="border-border bg-card p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Events</p>
-                                <p className="text-2xl font-bold text-foreground">{metrics.totalEvents}</p>
-                            </div>
-                            <Calendar className="h-8 w-8 text-blue-500" />
+                <Card className="border-border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Total Orders</p>
+                            <p className="text-2xl font-bold text-foreground">{metrics.totalOrders}</p>
                         </div>
-                    </Card>
-
-                    <Card className="border-border bg-card p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Revenue</p>
-                                <p className="text-2xl font-bold text-foreground">{formatCurrency(metrics.totalRevenue)}</p>
-                            </div>
-                            <DollarSign className="h-8 w-8 text-green-500" />
-                        </div>
-                    </Card>
-
-                    <Card className="border-border bg-card p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Orders</p>
-                                <p className="text-2xl font-bold text-foreground">{metrics.totalOrders}</p>
-                            </div>
-                            <Ticket className="h-8 w-8 text-purple-500" />
-                        </div>
-                    </Card>
-
-                    <Card className="border-border bg-card p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Active Promoters</p>
-                                <p className="text-2xl font-bold text-foreground">{metrics.totalPromoters}</p>
-                            </div>
-                            <Users className="h-8 w-8 text-yellow-500" />
-                        </div>
-                    </Card>
-
-                    <Card className="border-border bg-card p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Tickets</p>
-                                <p className="text-2xl font-bold text-foreground">{metrics.totalTicketsSold}</p>
-                            </div>
-                            <Activity className="h-8 w-8 text-red-500" />
-                        </div>
-                    </Card>
-                </div>
-
-                {/* Data Tabs */}
-                <Card className="border-border bg-card">
-                    <div className="p-6 border-b border-border">
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => setActiveTab("events")}
-                                className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === "events"
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-card text-foreground hover:bg-card/80"
-                                    }`}
-                            >
-                                Events ({filteredEvents.length})
-                            </button>
-                            <button
-                                onClick={() => setActiveTab("orders")}
-                                className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === "orders"
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-card text-foreground hover:bg-card/80"
-                                    }`}
-                            >
-                                Orders ({filteredOrders.length})
-                            </button>
-                            <button
-                                onClick={() => setActiveTab("promoters")}
-                                className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === "promoters"
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-card text-foreground hover:bg-card/80"
-                                    }`}
-                            >
-                                Promoters ({filteredPromoters.length})
-                            </button>
-                        </div>
+                        <Ticket className="h-8 w-8 text-purple-500" />
                     </div>
+                </Card>
 
-                    <div className="p-6">
-                        {activeTab === "events" && (
-                            <ScrollArea className="h-[600px]">
-                                <div className="space-y-4">
-                                    {filteredEvents.length === 0 ? (
-                                        <div className="text-center text-muted-foreground py-8">
-                                            No events found. Events are automatically created when sales are detected.
-                                        </div>
-                                    ) : (
-                                        filteredEvents.map((event) => (
-                                            <Card key={event.id} className="border-border bg-card/50 p-4">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`w-3 h-3 rounded-full ${getStatusColor(event.status)}`}></div>
-                                                        <h4 className="font-semibold text-foreground">{event.name}</h4>
-                                                        <Badge variant="outline">{event.event_id}</Badge>
-                                                    </div>
-                                                    <Badge className={getStatusColor(event.status)}>
-                                                        {event.status}
-                                                    </Badge>
-                                                </div>
+                <Card className="border-border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Active Promoters</p>
+                            <p className="text-2xl font-bold text-foreground">{metrics.totalPromoters}</p>
+                        </div>
+                        <Users className="h-8 w-8 text-yellow-500" />
+                    </div>
+                </Card>
 
-                                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-                                                    <div>
-                                                        <span className="text-muted-foreground">Revenue:</span>
-                                                        <span className="ml-2 text-foreground font-medium">{formatCurrency(event.total_revenue)}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Tickets:</span>
-                                                        <span className="ml-2 text-foreground font-medium">{event.ticket_count}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Promoters:</span>
-                                                        <span className="ml-2 text-foreground font-medium">{event.promoter_count}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Created:</span>
-                                                        <span className="ml-2 text-foreground font-medium">{formatDate(event.created_at)}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Last Sale:</span>
-                                                        <span className="ml-2 text-foreground font-medium">
-                                                            {event.last_sale_at ? formatDate(event.last_sale_at) : 'Never'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </Card>
-                                        ))
-                                    )}
-                                </div>
-                            </ScrollArea>
-                        )}
-
-                        {activeTab === "orders" && (
-                            <ScrollArea className="h-[600px]">
-                                <div className="space-y-4">
-                                    {filteredOrders.length === 0 ? (
-                                        <div className="text-center text-muted-foreground py-8">
-                                            No orders found. Orders are created from webhook data.
-                                        </div>
-                                    ) : (
-                                        filteredOrders.map((order) => (
-                                            <Card key={order.id} className="border-border bg-card/50 p-4">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`w-3 h-3 rounded-full ${getStatusColor(order.status)}`}></div>
-                                                        <h4 className="font-semibold text-foreground font-mono">{order.order_number}</h4>
-                                                        <Badge variant="outline">{order.event_name}</Badge>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="font-bold text-foreground">{formatCurrency(order.total)}</div>
-                                                        <div className="text-xs text-muted-foreground">{order.items_count} items</div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                                                    <div>
-                                                        <span className="text-muted-foreground">Customer:</span>
-                                                        <span className="ml-2 text-foreground">{order.account_name}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Email:</span>
-                                                        <span className="ml-2 text-foreground">{order.account_email}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Promoter:</span>
-                                                        <span className="ml-2 text-foreground">
-                                                            {order.promoter_tracking_link || 'Direct Sale'}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Processed:</span>
-                                                        <span className="ml-2 text-foreground">{formatDate(order.processed_at)}</span>
-                                                    </div>
-                                                </div>
-                                            </Card>
-                                        ))
-                                    )}
-                                </div>
-                            </ScrollArea>
-                        )}
-
-                        {activeTab === "promoters" && (
-                            <ScrollArea className="h-[600px]">
-                                <div className="space-y-4">
-                                    {filteredPromoters.length === 0 ? (
-                                        <div className="text-center text-muted-foreground py-8">
-                                            No promoters found. Promoters are tracked from referral data.
-                                        </div>
-                                    ) : (
-                                        filteredPromoters.map((promoter) => (
-                                            <Card key={promoter.id} className="border-border bg-card/50 p-4">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`w-3 h-3 rounded-full ${getTierColor(promoter.tier)}`}></div>
-                                                        <h4 className="font-semibold text-foreground">{promoter.name}</h4>
-                                                        <Badge variant="outline">{promoter.tracking_link}</Badge>
-                                                    </div>
-                                                    <Badge className={getTierColor(promoter.tier)}>
-                                                        {promoter.tier}
-                                                    </Badge>
-                                                </div>
-
-                                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-                                                    <div>
-                                                        <span className="text-muted-foreground">Tickets Sold:</span>
-                                                        <span className="ml-2 text-foreground font-medium">{promoter.total_tickets_sold}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Revenue:</span>
-                                                        <span className="ml-2 text-foreground font-medium">{formatCurrency(promoter.total_revenue_generated)}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Commission:</span>
-                                                        <span className="ml-2 text-foreground font-medium">{formatCurrency(promoter.total_commission_earned)}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Active Events:</span>
-                                                        <span className="ml-2 text-foreground font-medium">{promoter.active_events}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-muted-foreground">Last Sale:</span>
-                                                        <span className="ml-2 text-foreground font-medium">
-                                                            {promoter.last_sale_at ? formatDate(promoter.last_sale_at) : 'Never'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </Card>
-                                        ))
-                                    )}
-                                </div>
-                            </ScrollArea>
-                        )}
+                <Card className="border-border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Total Tickets</p>
+                            <p className="text-2xl font-bold text-foreground">{metrics.totalTicketsSold}</p>
+                        </div>
+                        <Activity className="h-8 w-8 text-red-500" />
                     </div>
                 </Card>
             </div>
+
+            {/* Data Tabs */}
+            <Card className="border-border bg-card">
+                <div className="p-6 border-b border-border">
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => setActiveTab("events")}
+                            className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === "events"
+                                ? "bg-blue-600 text-white"
+                                : "bg-card text-foreground hover:bg-card/80"
+                                }`}
+                        >
+                            Events ({filteredEvents.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("orders")}
+                            className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === "orders"
+                                ? "bg-blue-600 text-white"
+                                : "bg-card text-foreground hover:bg-card/80"
+                                }`}
+                        >
+                            Orders ({filteredOrders.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("promoters")}
+                            className={`px-4 py-2 rounded-md font-medium transition-colors ${activeTab === "promoters"
+                                ? "bg-blue-600 text-white"
+                                : "bg-card text-foreground hover:bg-card/80"
+                                }`}
+                        >
+                            Promoters ({filteredPromoters.length})
+                        </button>
+                    </div>
+                </div>
+
+                <div className="p-6">
+                    {activeTab === "events" && (
+                        <ScrollArea className="h-[600px]">
+                            <div className="space-y-4">
+                                {filteredEvents.length === 0 ? (
+                                    <div className="text-center text-muted-foreground py-8">
+                                        No events found. Events are automatically created when sales are detected.
+                                    </div>
+                                ) : (
+                                    filteredEvents.map((event) => (
+                                        <Card key={event.id} className="border-border bg-card/50 p-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-3 h-3 rounded-full ${getStatusColor(event.status)}`}></div>
+                                                    <h4 className="font-semibold text-foreground">{event.name}</h4>
+                                                    <Badge variant="outline">{event.event_id}</Badge>
+                                                </div>
+                                                <Badge className={getStatusColor(event.status)}>
+                                                    {event.status}
+                                                </Badge>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                                                <div>
+                                                    <span className="text-muted-foreground">Revenue:</span>
+                                                    <span className="ml-2 text-foreground font-medium">{formatCurrency(event.total_revenue)}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Tickets:</span>
+                                                    <span className="ml-2 text-foreground font-medium">{event.ticket_count}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Promoters:</span>
+                                                    <span className="ml-2 text-foreground font-medium">{event.promoter_count}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Created:</span>
+                                                    <span className="ml-2 text-foreground font-medium">{formatDate(event.created_at)}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Last Sale:</span>
+                                                    <span className="ml-2 text-foreground font-medium">
+                                                        {event.last_sale_at ? formatDate(event.last_sale_at) : 'Never'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))
+                                )}
+                            </div>
+                        </ScrollArea>
+                    )}
+
+                    {activeTab === "orders" && (
+                        <ScrollArea className="h-[600px]">
+                            <div className="space-y-4">
+                                {filteredOrders.length === 0 ? (
+                                    <div className="text-center text-muted-foreground py-8">
+                                        No orders found. Orders are created from webhook data.
+                                    </div>
+                                ) : (
+                                    filteredOrders.map((order) => (
+                                        <Card key={order.id} className="border-border bg-card/50 p-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-3 h-3 rounded-full ${getStatusColor(order.status)}`}></div>
+                                                    <h4 className="font-semibold text-foreground font-mono">{order.order_number}</h4>
+                                                    <Badge variant="outline">{order.event_name}</Badge>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="font-bold text-foreground">{formatCurrency(order.total)}</div>
+                                                    <div className="text-xs text-muted-foreground">{order.items_count} items</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                                                <div>
+                                                    <span className="text-muted-foreground">Customer:</span>
+                                                    <span className="ml-2 text-foreground">{order.account_name}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Email:</span>
+                                                    <span className="ml-2 text-foreground">{order.account_email}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Promoter:</span>
+                                                    <span className="ml-2 text-foreground">
+                                                        {order.promoter_tracking_link || 'Direct Sale'}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Processed:</span>
+                                                    <span className="ml-2 text-foreground">{formatDate(order.processed_at)}</span>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))
+                                )}
+                            </div>
+                        </ScrollArea>
+                    )}
+
+                    {activeTab === "promoters" && (
+                        <ScrollArea className="h-[600px]">
+                            <div className="space-y-4">
+                                {filteredPromoters.length === 0 ? (
+                                    <div className="text-center text-muted-foreground py-8">
+                                        No promoters found. Promoters are tracked from referral data.
+                                    </div>
+                                ) : (
+                                    filteredPromoters.map((promoter) => (
+                                        <Card key={promoter.id} className="border-border bg-card/50 p-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-3 h-3 rounded-full ${getTierColor(promoter.tier)}`}></div>
+                                                    <h4 className="font-semibold text-foreground">{promoter.name}</h4>
+                                                    <Badge variant="outline">{promoter.tracking_link}</Badge>
+                                                </div>
+                                                <Badge className={getTierColor(promoter.tier)}>
+                                                    {promoter.tier}
+                                                </Badge>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                                                <div>
+                                                    <span className="text-muted-foreground">Tickets Sold:</span>
+                                                    <span className="ml-2 text-foreground font-medium">{promoter.total_tickets_sold}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Revenue:</span>
+                                                    <span className="ml-2 text-foreground font-medium">{formatCurrency(promoter.total_revenue_generated)}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Commission:</span>
+                                                    <span className="ml-2 text-foreground font-medium">{formatCurrency(promoter.total_commission_earned)}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Active Events:</span>
+                                                    <span className="ml-2 text-foreground font-medium">{promoter.active_events}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-muted-foreground">Last Sale:</span>
+                                                    <span className="ml-2 text-foreground font-medium">
+                                                        {promoter.last_sale_at ? formatDate(promoter.last_sale_at) : 'Never'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    ))
+                                )}
+                            </div>
+                        </ScrollArea>
+                    )}
+                </div>
+            </Card>
         </div>
     )
 }

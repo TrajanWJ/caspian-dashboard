@@ -107,150 +107,148 @@ export default function DevWebhookPage() {
     }
 
     return (
-        <div className="min-h-screen bg-black">
-            <div className="mx-auto max-w-7xl px-6 py-8">
-                {/* Header */}
-                <div className="mb-8">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+            {/* Header */}
+            <div className="mb-8">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="mb-2 text-4xl font-bold text-foreground">Real-time Webhook Monitor</h1>
+                        <p className="text-muted-foreground">Live ticket sales logging and webhook endpoint monitoring</p>
+                    </div>
+                    <div className="flex gap-4">
+                        <Button
+                            onClick={() => setIsLive(!isLive)}
+                            className={`flex items-center gap-2 ${isLive ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'}`}
+                        >
+                            <Activity className="h-4 w-4" />
+                            {isLive ? 'Live Mode Active' : 'Enable Live Mode'}
+                        </Button>
+                        <Button
+                            onClick={fetchWebhookEvents}
+                            disabled={isLoading}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            Refresh
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Metrics Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <Card className="border-border bg-card p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="mb-2 text-4xl font-bold text-foreground">Real-time Webhook Monitor</h1>
-                            <p className="text-muted-foreground">Live ticket sales logging and webhook endpoint monitoring</p>
+                            <p className="text-sm text-muted-foreground">Total Sales</p>
+                            <p className="text-2xl font-bold text-foreground">${metrics.totalSales.toLocaleString()}</p>
                         </div>
-                        <div className="flex gap-4">
-                            <Button
-                                onClick={() => setIsLive(!isLive)}
-                                className={`flex items-center gap-2 ${isLive ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'}`}
-                            >
-                                <Activity className="h-4 w-4" />
-                                {isLive ? 'Live Mode Active' : 'Enable Live Mode'}
-                            </Button>
-                            <Button
-                                onClick={fetchWebhookEvents}
-                                disabled={isLoading}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                            >
-                                <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                                Refresh
-                            </Button>
-                        </div>
+                        <DollarSign className="h-8 w-8 text-green-500" />
                     </div>
-                </div>
+                </Card>
 
-                {/* Metrics Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <Card className="border-border bg-card p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Sales</p>
-                                <p className="text-2xl font-bold text-foreground">${metrics.totalSales.toLocaleString()}</p>
-                            </div>
-                            <DollarSign className="h-8 w-8 text-green-500" />
+                <Card className="border-border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Total Orders</p>
+                            <p className="text-2xl font-bold text-foreground">{metrics.totalOrders}</p>
                         </div>
-                    </Card>
-
-                    <Card className="border-border bg-card p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Orders</p>
-                                <p className="text-2xl font-bold text-foreground">{metrics.totalOrders}</p>
-                            </div>
-                            <Users className="h-8 w-8 text-blue-500" />
-                        </div>
-                    </Card>
-
-                    <Card className="border-border bg-card p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Active Events</p>
-                                <p className="text-2xl font-bold text-foreground">{metrics.activeEvents}</p>
-                            </div>
-                            <Database className="h-8 w-8 text-purple-500" />
-                        </div>
-                    </Card>
-
-                    <Card className="border-border bg-card p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Last Updated</p>
-                                <p className="text-sm font-medium text-foreground">{formatTimestamp(metrics.lastUpdated)}</p>
-                            </div>
-                            <Clock className="h-8 w-8 text-yellow-500" />
-                        </div>
-                    </Card>
-                </div>
-
-                {/* Live Feed */}
-                <Card className="border-border bg-card">
-                    <div className="p-6 border-b border-border">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-semibold text-foreground">Live Sales Feed</h3>
-                            <div className="flex items-center gap-2">
-                                <div className={`w-3 h-3 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
-                                <span className="text-sm text-muted-foreground">{isLive ? 'Streaming live' : 'Manual refresh'}</span>
-                            </div>
-                        </div>
+                        <Users className="h-8 w-8 text-blue-500" />
                     </div>
+                </Card>
 
-                    <ScrollArea className="h-[600px]">
-                        <div className="divide-y divide-border">
-                            {events.length === 0 ? (
-                                <div className="p-8 text-center text-muted-foreground">
-                                    No webhook events yet. Enable live mode or wait for incoming sales.
-                                </div>
-                            ) : (
-                                events.map((event) => (
-                                    <div key={event.id} className="p-6 hover:bg-card/50 transition-colors">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-3 h-3 rounded-full ${getStatusColor(event.success)}`}></div>
-                                                <span className="text-sm font-medium text-foreground">{event.type}</span>
-                                                <Badge variant={event.success ? "default" : "destructive"}>
-                                                    {event.success ? "Success" : "Failed"}
-                                                </Badge>
-                                            </div>
-                                            <span className="text-xs text-muted-foreground">{formatTimestamp(event.timestamp)}</span>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                            <div>
-                                                <span className="text-muted-foreground">Order:</span>
-                                                <span className="ml-2 text-foreground font-mono">{event.order_number}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted-foreground">Event:</span>
-                                                <span className="ml-2 text-foreground">{event.event_id}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-muted-foreground">Promoter:</span>
-                                                <span className="ml-2 text-foreground">{event.promoter_id || 'Direct'}</span>
-                                            </div>
-                                        </div>
-
-                                        {event.raw_data && (
-                                            <div className="mt-3 p-3 bg-background rounded-md">
-                                                <details className="text-xs">
-                                                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                                                        Raw Webhook Data
-                                                    </summary>
-                                                    <pre className="mt-2 overflow-auto max-h-32 text-xs">
-                                                        {JSON.stringify(event.raw_data, null, 2)}
-                                                    </pre>
-                                                </details>
-                                            </div>
-                                        )}
-
-                                        {event.error_message && (
-                                            <div className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-red-400 text-sm">
-                                                Error: {event.error_message}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))
-                            )}
+                <Card className="border-border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Active Events</p>
+                            <p className="text-2xl font-bold text-foreground">{metrics.activeEvents}</p>
                         </div>
-                    </ScrollArea>
+                        <Database className="h-8 w-8 text-purple-500" />
+                    </div>
+                </Card>
+
+                <Card className="border-border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Last Updated</p>
+                            <p className="text-sm font-medium text-foreground">{formatTimestamp(metrics.lastUpdated)}</p>
+                        </div>
+                        <Clock className="h-8 w-8 text-yellow-500" />
+                    </div>
                 </Card>
             </div>
+
+            {/* Live Feed */}
+            <Card className="border-border bg-card">
+                <div className="p-6 border-b border-border">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-foreground">Live Sales Feed</h3>
+                        <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
+                            <span className="text-sm text-muted-foreground">{isLive ? 'Streaming live' : 'Manual refresh'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <ScrollArea className="h-[600px]">
+                    <div className="divide-y divide-border">
+                        {events.length === 0 ? (
+                            <div className="p-8 text-center text-muted-foreground">
+                                No webhook events yet. Enable live mode or wait for incoming sales.
+                            </div>
+                        ) : (
+                            events.map((event) => (
+                                <div key={event.id} className="p-6 hover:bg-card/50 transition-colors">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-3 h-3 rounded-full ${getStatusColor(event.success)}`}></div>
+                                            <span className="text-sm font-medium text-foreground">{event.type}</span>
+                                            <Badge variant={event.success ? "default" : "destructive"}>
+                                                {event.success ? "Success" : "Failed"}
+                                            </Badge>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">{formatTimestamp(event.timestamp)}</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                        <div>
+                                            <span className="text-muted-foreground">Order:</span>
+                                            <span className="ml-2 text-foreground font-mono">{event.order_number}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-muted-foreground">Event:</span>
+                                            <span className="ml-2 text-foreground">{event.event_id}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-muted-foreground">Promoter:</span>
+                                            <span className="ml-2 text-foreground">{event.promoter_id || 'Direct'}</span>
+                                        </div>
+                                    </div>
+
+                                    {event.raw_data && (
+                                        <div className="mt-3 p-3 bg-background rounded-md">
+                                            <details className="text-xs">
+                                                <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                                                    Raw Webhook Data
+                                                </summary>
+                                                <pre className="mt-2 overflow-auto max-h-32 text-xs">
+                                                    {JSON.stringify(event.raw_data, null, 2)}
+                                                </pre>
+                                            </details>
+                                        </div>
+                                    )}
+
+                                    {event.error_message && (
+                                        <div className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-red-400 text-sm">
+                                            Error: {event.error_message}
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </ScrollArea>
+            </Card>
         </div>
     )
 }

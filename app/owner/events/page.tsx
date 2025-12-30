@@ -1,27 +1,79 @@
-import { getEvents, getOrders, getPromoters } from "@/lib/data-store"
+"use client"
+
 import { Card } from "@/components/ui/card"
 import { Calendar, Ticket, TrendingUp, DollarSign, Users } from "lucide-react"
 import { Sidebar } from "@/components/sidebar"
+import { useEffect, useState } from "react"
 
-export default async function EventsPage() {
-  const events = await getEvents()
-  const orders = await getOrders()
-  const promoters = await getPromoters()
+interface Event {
+  id: string
+  name: string
+  start_date: string
+  end_date: string
+  status: "upcoming" | "active" | "completed"
+  total_tickets_sold: number
+  total_revenue: number
+  is_current: boolean
+  commission: number
+  orderCount: number
+  uniquePromoters: number
+}
 
-  const eventsWithStats = events
-    .map((event) => {
-      const eventOrders = orders.filter((o) => o.event_id === event.id && !o.cancelled && !o.refunded)
-      const uniquePromoters = new Set(eventOrders.map((o) => o.promoter_id)).size
-      const commission = eventOrders.reduce((sum, o) => sum + o.commission_earned, 0)
+export default function EventsPage() {
+  const [eventsWithStats, setEventsWithStats] = useState<Event[]>([])
+  const [loading, setLoading] = useState(true)
 
-      return {
-        ...event,
-        orderCount: eventOrders.length,
-        uniquePromoters,
-        commission,
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [eventsRes, ordersRes] = await Promise.all([
+          fetch('/api/events'),
+          fetch('/api/orders')
+        ])
+
+        if (!eventsRes.ok || !ordersRes.ok) {
+          throw new Error('Failed to fetch data')
+        }
+
+        const events = await eventsRes.json()
+        const orders = await ordersRes.json()
+
+        const eventsWithStats = events
+          .map((event: any) => {
+            const eventOrders = orders.filter((o: any) => o.event_id === event.id && !o.cancelled && !o.refunded)
+            const uniquePromoters = new Set(eventOrders.map((o: any) => o.promoter_id)).size
+            const commission = eventOrders.reduce((sum: number, o: any) => sum + o.commission_earned, 0)
+
+            return {
+              ...event,
+              orderCount: eventOrders.length,
+              uniquePromoters,
+              commission,
+            }
+          })
+          .sort((a: Event, b: Event) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime())
+
+        setEventsWithStats(eventsWithStats)
+      } catch (error) {
+        console.error("Failed to load events data:", error)
+      } finally {
+        setLoading(false)
       }
-    })
-    .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime())
+    }
+
+    loadData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black">
+        <Sidebar variant="owner" />
+        <div className="ml-64 flex items-center justify-center py-12">
+          <div className="text-white">Loading events...</div>
+        </div>
+      </div>
+    )
+  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
